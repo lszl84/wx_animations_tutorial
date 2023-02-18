@@ -107,7 +107,7 @@ void MyFrame::SetupAnimations()
              auto y = sender->easingFunction(sender->startValue, sender->endValue, tNorm);
              charts[0]->highlightedPoint = {x, y};
          },
-         "Horizontal Position", AnimatedValue::Linear},
+         "Horizontal Position", AnimatedValue::EaseInOutCubic},
         {100, 255, [this](AnimatedValue *sender, double tNorm, double value)
          {
              item->SetBackgroundColour(wxColour(200, value, 100));
@@ -116,7 +116,7 @@ void MyFrame::SetupAnimations()
              auto y = sender->easingFunction(sender->startValue, sender->endValue, tNorm);
              charts[1]->highlightedPoint = {x, y};
          },
-         "Green Color Value", AnimatedValue::Linear}};
+         "Green Color Value", AnimatedValue::EaseInOutQuad}};
 
     animator.SetAnimatedValues(animatedValues);
     animator.SetOnIteration([this]()

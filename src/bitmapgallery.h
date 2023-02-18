@@ -39,6 +39,10 @@ public:
             const wxSize drawSize = GetClientSize();
 
             DrawBitmaps(gc, drawSize);
+
+            DrawNavigationRect(gc, NavigationRectLeft());
+            DrawNavigationRect(gc, NavigationRectRight());
+
             delete gc;
         }
     }
@@ -103,6 +107,14 @@ public:
         gc->SetTransform(currentTransform);
     }
 
+    void DrawNavigationRect(wxGraphicsContext *gc, const wxRect &rect)
+    {
+        gc->SetPen(*wxTRANSPARENT_PEN);
+        gc->SetBrush(wxBrush(wxColor(255, 255, 255, 64)));
+
+        gc->DrawRectangle(rect.GetX(), rect.GetY(), rect.GetWidth(), rect.GetHeight());
+    }
+
     void OnKeyDown(wxKeyEvent &evt)
     {
         if (evt.GetKeyCode() == WXK_LEFT)
@@ -126,4 +138,19 @@ public:
 
 private:
     int selectedIndex = 0;
+
+    wxSize NavigationRectSize()
+    {
+        return {FromDIP(30), GetClientSize().GetHeight()};
+    }
+
+    wxRect NavigationRectLeft()
+    {
+        return {0, 0, NavigationRectSize().GetWidth(), NavigationRectSize().GetHeight()};
+    }
+
+    wxRect NavigationRectRight()
+    {
+        return {GetClientSize().GetWidth() - NavigationRectSize().GetWidth(), 0, NavigationRectSize().GetWidth(), NavigationRectSize().GetHeight()};
+    }
 };

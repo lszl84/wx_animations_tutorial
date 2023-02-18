@@ -40,8 +40,14 @@ public:
 
             DrawBitmaps(gc, drawSize);
 
+            double arrowLineLength = NavigationRectSize().GetWidth() * 2 / 3;
+            double arrowLineWidth = FromDIP(5);
+
             DrawNavigationRect(gc, NavigationRectLeft());
+            DrawArrow(gc, NavigationRectLeft(), arrowLineLength, arrowLineWidth, 0);
+
             DrawNavigationRect(gc, NavigationRectRight());
+            DrawArrow(gc, NavigationRectRight(), arrowLineLength, arrowLineWidth, M_PI);
 
             delete gc;
         }
@@ -113,6 +119,24 @@ public:
         gc->SetBrush(wxBrush(wxColor(255, 255, 255, 64)));
 
         gc->DrawRectangle(rect.GetX(), rect.GetY(), rect.GetWidth(), rect.GetHeight());
+    }
+
+    void DrawArrow(wxGraphicsContext *gc, const wxRect &rectToCenterIn, double lineLength, double lineWidth, double rotationAngle)
+    {
+        const auto currentTransform = gc->GetTransform();
+        const auto rectCenter = rectToCenterIn.GetPosition() + rectToCenterIn.GetSize() / 2;
+
+        gc->SetPen(wxPen(wxColor(255, 255, 255, 255), lineWidth));
+
+        gc->Translate(rectCenter.x, rectCenter.y);
+        gc->Rotate(-M_PI / 4);
+        gc->Rotate(rotationAngle);
+        gc->Translate(-lineLength / 4, -lineLength / 4);
+
+        gc->StrokeLine(0, 0, lineLength, 0);
+        gc->StrokeLine(0, 0, 0, lineLength);
+
+        gc->SetTransform(currentTransform);
     }
 
     void OnKeyDown(wxKeyEvent &evt)

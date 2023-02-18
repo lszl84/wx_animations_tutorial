@@ -25,6 +25,8 @@ public:
         this->Bind(wxEVT_PAINT, &BitmapGallery::OnPaint, this);
 
         this->Bind(wxEVT_KEY_DOWN, &BitmapGallery::OnKeyDown, this);
+        this->Bind(wxEVT_LEFT_DOWN, &BitmapGallery::OnLeftDown, this);
+        this->Bind(wxEVT_LEFT_DCLICK, &BitmapGallery::OnLeftDown, this);
     }
 
     void OnPaint(wxPaintEvent &evt)
@@ -147,6 +149,24 @@ public:
             Refresh();
         }
         else if (evt.GetKeyCode() == WXK_RIGHT)
+        {
+            selectedIndex = std::min(static_cast<int>(bitmaps.size()) - 1, selectedIndex + 1);
+            Refresh();
+        }
+        else
+        {
+            evt.Skip();
+        }
+    }
+
+    void OnLeftDown(wxMouseEvent &evt)
+    {
+        if (NavigationRectLeft().Contains(evt.GetPosition()))
+        {
+            selectedIndex = std::max(0, selectedIndex - 1);
+            Refresh();
+        }
+        else if (NavigationRectRight().Contains(evt.GetPosition()))
         {
             selectedIndex = std::min(static_cast<int>(bitmaps.size()) - 1, selectedIndex + 1);
             Refresh();

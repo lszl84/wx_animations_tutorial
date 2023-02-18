@@ -1,7 +1,9 @@
 # wx_animations_tutorial
 
-A template for multiplatform WxWidgets projects using CMake
+Animations in wxWidgets using wxTimer and wxTimer.
 
-For details see the blog post: https://justdevtutorials.medium.com/wxwidgets-cmake-multiplatform-superbuild-4ea86c4e6eda
+FREE wxWidgets course: https://www.youtube.com/playlist?list=PL0qQTroQZs5vVmTuBew-nTx9DIu6rRl2c
 
-Also check out the video tutorial showcasing installation on Linux, Windows and Mac OS X: https://www.youtube.com/watch?v=MfuBS9n5_aY&t=4s
+---
+Check out the blog for more! [www.justdevtutorials.com](https://www.justdevtutorials.com)
+---

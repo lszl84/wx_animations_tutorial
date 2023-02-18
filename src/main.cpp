@@ -1,5 +1,8 @@
 #include <wx/wx.h>
 
+#include "animator.h"
+#include "animatedvalue.h"
+
 class MyApp : public wxApp
 {
 public:
@@ -19,9 +22,10 @@ private:
     wxButton *startButton;
     wxButton *resetButton;
 
-    wxTimer timer;
+    Animator animator;
+    std::vector<AnimatedValue> animatedValues;
 
-    const int MAX_X = 300;
+    void SetupAnimations();
 };
 
 bool MyApp::OnInit()
@@ -34,6 +38,8 @@ bool MyApp::OnInit()
 MyFrame::MyFrame(const wxString &title, const wxPoint &pos, const wxSize &size)
     : wxFrame(nullptr, wxID_ANY, title, pos, size)
 {
+    SetupAnimations();
+
     auto mainSizer = new wxBoxSizer(wxVERTICAL);
     auto animPanel = new wxPanel(this, wxID_ANY);
     animPanel->SetBackgroundColour(wxColour(100, 100, 200));
@@ -61,31 +67,34 @@ MyFrame::MyFrame(const wxString &title, const wxPoint &pos, const wxSize &size)
 
     this->SetSizerAndFit(mainSizer);
 
-    timer.SetOwner(this);
-
-    this->Bind(wxEVT_TIMER, [this](wxTimerEvent &event)
-               {
-        if (item->GetPosition().x >= FromDIP(MAX_X))
-        {
-            timer.Stop();
-            resetButton->Enable();
-        }
-        else
-        {
-            item->Move(item->GetPosition().x + FromDIP(1), item->GetPosition().y);
-        }
-        Refresh(); });
-
     startButton->Bind(wxEVT_BUTTON, [this](wxCommandEvent &event)
                       {
                           startButton->Disable();
                           resetButton->Disable();
-                          timer.Start(10); });
+                          animator.Start(1000); });
 
     resetButton->Bind(wxEVT_BUTTON, [this](wxCommandEvent &event)
                       {
-                          item->Move(0, 0);
+                          animator.Reset();
                           startButton->Enable();
                           resetButton->Disable();
                           Refresh(); });
+
+    animator.Reset();
+}
+
+void MyFrame::SetupAnimations()
+{
+    animatedValues = {
+        {0, 300, [this](AnimatedValue *sender, double tNorm, double value)
+         {
+             item->SetPosition(wxPoint(FromDIP(value), item->GetPosition().y));
+         }}};
+
+    animator.SetAnimatedValues(animatedValues);
+    animator.SetOnIteration([this]()
+                            { Refresh(); });
+
+    animator.SetOnStop([this]()
+                       { resetButton->Enable(); });
 }

@@ -6,6 +6,9 @@
 
 #include <vector>
 
+#include "animator.h"
+#include "animatedvalue.h"
+
 enum class BitmapScaling : int
 {
     Center = 0,
@@ -79,6 +82,11 @@ public:
         const wxSize dipDrawSize = ToDIP(drawSize);
 
         gc->Translate(-FromDIP(dipDrawSize.GetWidth()) * selectedIndex, 0);
+
+        if (animator.IsRunning())
+        {
+            gc->Translate(-FromDIP(dipDrawSize.GetWidth()) * animationOffsetNormalized, 0);
+        }
 
         for (const auto &bitmap : bitmaps)
         {
@@ -193,13 +201,11 @@ public:
     {
         if (evt.GetKeyCode() == WXK_LEFT)
         {
-            selectedIndex = std::max(0, selectedIndex - 1);
-            Refresh();
+            AnimateToPrevious();
         }
         else if (evt.GetKeyCode() == WXK_RIGHT)
         {
-            selectedIndex = std::min(static_cast<int>(bitmaps.size()) - 1, selectedIndex + 1);
-            Refresh();
+            AnimateToNext();
         }
         else
         {
@@ -211,13 +217,11 @@ public:
     {
         if (shouldShowLeftArrow && NavigationRectLeft().Contains(evt.GetPosition()))
         {
-            selectedIndex = std::max(0, selectedIndex - 1);
-            Refresh();
+            AnimateToPrevious();
         }
         else if (shouldShowRightArrow && NavigationRectRight().Contains(evt.GetPosition()))
         {
-            selectedIndex = std::min(static_cast<int>(bitmaps.size()) - 1, selectedIndex + 1);
-            Refresh();
+            AnimateToNext();
         }
         else
         {
@@ -252,12 +256,70 @@ public:
         Refresh();
     }
 
+    void AnimateToPrevious()
+    {
+        if (animator.IsRunning())
+        {
+            return;
+        }
+
+        if (selectedIndex <= 0)
+        {
+            return;
+        }
+
+        StartAnimation(0.0, -1.0, selectedIndex - 1);
+    }
+
+    void AnimateToNext()
+    {
+        if (animator.IsRunning())
+        {
+            return;
+        }
+
+        if (selectedIndex >= bitmaps.size() - 1)
+        {
+            return;
+        }
+
+        StartAnimation(0.0, 1.0, selectedIndex + 1);
+    }
+
+    void StartAnimation(double offsetStart, double offsetTarget, int indexTarget)
+    {
+        AnimatedValue xOffset = {
+            offsetStart,
+            offsetTarget,
+            [this](AnimatedValue *sender, double tNorm, double value)
+            {
+                animationOffsetNormalized = value;
+            },
+            "xOffset",
+            AnimatedValue::EaseInOutCubic};
+
+        animator.SetAnimatedValues({xOffset});
+        animator.SetOnIteration([this]()
+                                { Refresh(); });
+
+        animator.SetOnStop([this, indexTarget]()
+                           {
+                               selectedIndex = indexTarget;
+                               animationOffsetNormalized = 0;
+                               Refresh(); });
+
+        animator.Start(200);
+    }
+
     std::vector<wxBitmap> bitmaps;
     BitmapScaling scaling = BitmapScaling::Center;
 
 private:
     bool shouldShowLeftArrow = false, shouldShowRightArrow = false;
     int selectedIndex = 0;
+
+    Animator animator;
+    double animationOffsetNormalized = 0;
 
     wxSize NavigationRectSize()
     {

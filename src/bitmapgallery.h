@@ -27,6 +27,8 @@ public:
         this->Bind(wxEVT_KEY_DOWN, &BitmapGallery::OnKeyDown, this);
         this->Bind(wxEVT_LEFT_DOWN, &BitmapGallery::OnLeftDown, this);
         this->Bind(wxEVT_LEFT_DCLICK, &BitmapGallery::OnLeftDown, this);
+        this->Bind(wxEVT_MOTION, &BitmapGallery::OnMouseMove, this);
+        this->Bind(wxEVT_LEAVE_WINDOW, &BitmapGallery::OnMouseLeave, this);
     }
 
     void OnPaint(wxPaintEvent &evt)
@@ -45,11 +47,17 @@ public:
             double arrowLineLength = NavigationRectSize().GetWidth() * 2 / 3;
             double arrowLineWidth = FromDIP(5);
 
-            DrawNavigationRect(gc, NavigationRectLeft());
-            DrawArrow(gc, NavigationRectLeft(), arrowLineLength, arrowLineWidth, 0);
+            if (shouldShowLeftArrow)
+            {
+                DrawNavigationRect(gc, NavigationRectLeft());
+                DrawArrow(gc, NavigationRectLeft(), arrowLineLength, arrowLineWidth, 0);
+            }
 
-            DrawNavigationRect(gc, NavigationRectRight());
-            DrawArrow(gc, NavigationRectRight(), arrowLineLength, arrowLineWidth, M_PI);
+            if (shouldShowRightArrow)
+            {
+                DrawNavigationRect(gc, NavigationRectRight());
+                DrawArrow(gc, NavigationRectRight(), arrowLineLength, arrowLineWidth, M_PI);
+            }
 
             delete gc;
         }
@@ -161,12 +169,12 @@ public:
 
     void OnLeftDown(wxMouseEvent &evt)
     {
-        if (NavigationRectLeft().Contains(evt.GetPosition()))
+        if (shouldShowLeftArrow && NavigationRectLeft().Contains(evt.GetPosition()))
         {
             selectedIndex = std::max(0, selectedIndex - 1);
             Refresh();
         }
-        else if (NavigationRectRight().Contains(evt.GetPosition()))
+        else if (shouldShowRightArrow && NavigationRectRight().Contains(evt.GetPosition()))
         {
             selectedIndex = std::min(static_cast<int>(bitmaps.size()) - 1, selectedIndex + 1);
             Refresh();
@@ -177,10 +185,38 @@ public:
         }
     }
 
+    void OnMouseMove(wxMouseEvent &evt)
+    {
+        if (NavigationRectLeft().Contains(evt.GetPosition()))
+        {
+            shouldShowLeftArrow = true;
+            Refresh();
+        }
+        else if (NavigationRectRight().Contains(evt.GetPosition()))
+        {
+            shouldShowRightArrow = true;
+            Refresh();
+        }
+        else
+        {
+            shouldShowLeftArrow = false;
+            shouldShowRightArrow = false;
+            Refresh();
+        }
+    }
+
+    void OnMouseLeave(wxMouseEvent &evt)
+    {
+        shouldShowLeftArrow = false;
+        shouldShowRightArrow = false;
+        Refresh();
+    }
+
     std::vector<wxBitmap> bitmaps;
     BitmapScaling scaling = BitmapScaling::Center;
 
 private:
+    bool shouldShowLeftArrow = false, shouldShowRightArrow = false;
     int selectedIndex = 0;
 
     wxSize NavigationRectSize()

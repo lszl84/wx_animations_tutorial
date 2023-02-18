@@ -4,6 +4,8 @@
 #include <wx/graphics.h>
 #include <wx/dcbuffer.h>
 
+#include <vector>
+
 enum class BitmapScaling : int
 {
     Center = 0,
@@ -30,61 +32,78 @@ public:
 
         wxGraphicsContext *gc = wxGraphicsContext::Create(dc);
 
-        if (gc && bitmap.IsOk())
+        if (gc && bitmaps.size() > 0)
         {
             const wxSize drawSize = GetClientSize();
 
-            DrawBitmap(gc, drawSize);
+            DrawBitmaps(gc, drawSize);
             delete gc;
         }
     }
 
-    void DrawBitmap(wxGraphicsContext *gc, const wxSize &drawSize)
+    void DrawBitmaps(wxGraphicsContext *gc, const wxSize &drawSize)
     {
-        const wxSize dipDrawSize = ToDIP(drawSize);
-        const wxSize bmpSize = bitmap.GetSize();
+        const auto currentTransform = gc->GetTransform();
+        const wxSize dipDrawSize = ToDIP(drawSize / static_cast<int>(bitmaps.size()));
 
-        // treating image size as DIP
-        double imageW = bmpSize.GetWidth();
-        double imageH = bmpSize.GetHeight();
-
-        if (scaling == BitmapScaling::Fit)
+        for (const auto &bitmap : bitmaps)
         {
-            double scaleX = dipDrawSize.GetWidth() / imageW;
-            double scaleY = dipDrawSize.GetHeight() / imageH;
+            const wxSize bmpSize = bitmap.GetSize();
 
-            double scale = std::min(scaleX, scaleY);
+            // treating image size as DIP
+            double imageW = bmpSize.GetWidth();
+            double imageH = bmpSize.GetHeight();
 
-            imageW *= scale;
-            imageH *= scale;
+            if (scaling == BitmapScaling::Fit)
+            {
+                double scaleX = dipDrawSize.GetWidth() / imageW;
+                double scaleY = dipDrawSize.GetHeight() / imageH;
+
+                double scale = std::min(scaleX, scaleY);
+
+                imageW *= scale;
+                imageH *= scale;
+            }
+            else if (scaling == BitmapScaling::FillWidth)
+            {
+                double scaleX = dipDrawSize.GetWidth() / imageW;
+
+                imageW *= scaleX;
+                imageH *= scaleX;
+            }
+            else if (scaling == BitmapScaling::FillHeight)
+            {
+                double scaleY = dipDrawSize.GetHeight() / imageH;
+
+                imageW *= scaleY;
+                imageH *= scaleY;
+            }
+
+            double cellCenterX = dipDrawSize.GetWidth() / 2;
+            double imageCenterX = imageW / 2;
+
+            double cellCenterY = dipDrawSize.GetHeight() / 2;
+            double imageCenterY = imageH / 2;
+
+            double bitmapX = cellCenterX - imageCenterX;
+            double bitmapY = cellCenterY - imageCenterY;
+
+            gc->Clip(0, 0, FromDIP(dipDrawSize.GetWidth()), FromDIP(dipDrawSize.GetHeight()));
+            gc->DrawBitmap(bitmap, FromDIP(bitmapX), FromDIP(bitmapY), FromDIP(imageW), FromDIP(imageH));
+
+            gc->ResetClip();
+
+            // temporary overlay
+            gc->SetPen(*wxRED_PEN);
+            gc->SetBrush(wxColor(255, 0, 0, 64));
+            gc->DrawRectangle(0, 0, FromDIP(dipDrawSize.GetWidth()), FromDIP(dipDrawSize.GetHeight()));
+
+            gc->Translate(FromDIP(dipDrawSize.GetWidth()), 0);
         }
-        else if (scaling == BitmapScaling::FillWidth)
-        {
-            double scaleX = dipDrawSize.GetWidth() / imageW;
 
-            imageW *= scaleX;
-            imageH *= scaleX;
-        }
-        else if (scaling == BitmapScaling::FillHeight)
-        {
-            double scaleY = dipDrawSize.GetHeight() / imageH;
-
-            imageW *= scaleY;
-            imageH *= scaleY;
-        }
-
-        double cellCenterX = dipDrawSize.GetWidth() / 2;
-        double imageCenterX = imageW / 2;
-
-        double cellCenterY = dipDrawSize.GetHeight() / 2;
-        double imageCenterY = imageH / 2;
-
-        double bitmapX = cellCenterX - imageCenterX;
-        double bitmapY = cellCenterY - imageCenterY;
-
-        gc->DrawBitmap(bitmap, FromDIP(bitmapX), FromDIP(bitmapY), FromDIP(imageW), FromDIP(imageH));
+        gc->SetTransform(currentTransform);
     }
 
-    wxBitmap bitmap;
+    std::vector<wxBitmap> bitmaps;
     BitmapScaling scaling = BitmapScaling::Center;
 };

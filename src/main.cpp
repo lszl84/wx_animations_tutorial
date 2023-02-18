@@ -3,6 +3,8 @@
 #include "animator.h"
 #include "animatedvalue.h"
 
+#include "chartcontrol.h"
+
 class MyApp : public wxApp
 {
 public:
@@ -25,7 +27,10 @@ private:
     Animator animator;
     std::vector<AnimatedValue> animatedValues;
 
+    std::vector<ChartControl *> charts;
+
     void SetupAnimations();
+    void SetupCharts();
 };
 
 bool MyApp::OnInit()
@@ -47,6 +52,8 @@ MyFrame::MyFrame(const wxString &title, const wxPoint &pos, const wxSize &size)
     item = new wxPanel(animPanel, wxID_ANY, wxDefaultPosition, FromDIP(wxSize(100, 100)));
     item->SetBackgroundColour(wxColour(200, 100, 100));
 
+    SetupCharts();
+
     auto buttonsPanel = new wxPanel(this, wxID_ANY);
     auto buttonsSizer = new wxBoxSizer(wxHORIZONTAL);
 
@@ -61,6 +68,12 @@ MyFrame::MyFrame(const wxString &title, const wxPoint &pos, const wxSize &size)
     buttonsPanel->SetSizer(buttonsSizer);
 
     mainSizer->Add(animPanel, 1, wxEXPAND);
+
+    for (const auto &chart : charts)
+    {
+        mainSizer->Add(chart, 1, wxEXPAND);
+    }
+
     mainSizer->Add(buttonsPanel, 0, wxEXPAND);
 
     mainSizer->SetMinSize(FromDIP(wxSize(500, 600)));
@@ -89,11 +102,21 @@ void MyFrame::SetupAnimations()
         {0, 300, [this](AnimatedValue *sender, double tNorm, double value)
          {
              item->SetPosition(wxPoint(FromDIP(value), item->GetPosition().y));
-         }},
+
+             auto x = tNorm;
+             auto y = sender->easingFunction(sender->startValue, sender->endValue, tNorm);
+             charts[0]->highlightedPoint = {x, y};
+         },
+         "Horizontal Position", AnimatedValue::Linear},
         {100, 255, [this](AnimatedValue *sender, double tNorm, double value)
          {
              item->SetBackgroundColour(wxColour(200, value, 100));
-         }}};
+
+             auto x = tNorm;
+             auto y = sender->easingFunction(sender->startValue, sender->endValue, tNorm);
+             charts[1]->highlightedPoint = {x, y};
+         },
+         "Green Color Value", AnimatedValue::Linear}};
 
     animator.SetAnimatedValues(animatedValues);
     animator.SetOnIteration([this]()
@@ -101,4 +124,27 @@ void MyFrame::SetupAnimations()
 
     animator.SetOnStop([this]()
                        { resetButton->Enable(); });
+}
+
+void MyFrame::SetupCharts()
+{
+    for (const auto &animatedValue : animatedValues)
+    {
+        auto chart = new ChartControl(this, wxID_ANY, wxDefaultPosition, wxDefaultSize);
+        chart->title = animatedValue.description;
+
+        chart->minX = 0;
+        chart->maxX = 1;
+
+        auto pointsCount = 100;
+
+        for (int i = 0; i < pointsCount; i++)
+        {
+            auto x = static_cast<double>(i) / (pointsCount - 1);
+            auto y = animatedValue.easingFunction(animatedValue.startValue, animatedValue.endValue, x);
+            chart->values.push_back({x, y});
+        }
+
+        charts.push_back(chart);
+    }
 }

@@ -98,7 +98,7 @@ private:
 
         for (auto &value : animatedValues)
         {
-            double callbackValue = value.startValue + (value.endValue - value.startValue) * tNorm;
+            double callbackValue = value.easingFunction(value.startValue, value.endValue, tNorm);
             value.onValueChanged(&value, tNorm, callbackValue);
         }
 

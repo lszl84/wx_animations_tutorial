@@ -4,6 +4,14 @@
 #include <wx/graphics.h>
 #include <wx/dcbuffer.h>
 
+enum class BitmapScaling : int
+{
+    Center = 0,
+    Fit,
+    FillWidth,
+    FillHeight
+};
+
 class BitmapGallery : public wxWindow
 {
 public:
@@ -40,6 +48,31 @@ public:
         double imageW = bmpSize.GetWidth();
         double imageH = bmpSize.GetHeight();
 
+        if (scaling == BitmapScaling::Fit)
+        {
+            double scaleX = dipDrawSize.GetWidth() / imageW;
+            double scaleY = dipDrawSize.GetHeight() / imageH;
+
+            double scale = std::min(scaleX, scaleY);
+
+            imageW *= scale;
+            imageH *= scale;
+        }
+        else if (scaling == BitmapScaling::FillWidth)
+        {
+            double scaleX = dipDrawSize.GetWidth() / imageW;
+
+            imageW *= scaleX;
+            imageH *= scaleX;
+        }
+        else if (scaling == BitmapScaling::FillHeight)
+        {
+            double scaleY = dipDrawSize.GetHeight() / imageH;
+
+            imageW *= scaleY;
+            imageH *= scaleY;
+        }
+
         double cellCenterX = dipDrawSize.GetWidth() / 2;
         double imageCenterX = imageW / 2;
 
@@ -53,4 +86,5 @@ public:
     }
 
     wxBitmap bitmap;
+    BitmapScaling scaling = BitmapScaling::Center;
 };

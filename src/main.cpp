@@ -33,4 +33,5 @@ MyFrame::MyFrame(const wxString &title, const wxPoint &pos, const wxSize &size)
 
     wxImage image("/path/to/your/image.jpeg");
     gallery->bitmap = image;
+    gallery->scaling = BitmapScaling::Fit;
 }

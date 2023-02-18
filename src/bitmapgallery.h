@@ -46,7 +46,7 @@ public:
     void DrawBitmaps(wxGraphicsContext *gc, const wxSize &drawSize)
     {
         const auto currentTransform = gc->GetTransform();
-        const wxSize dipDrawSize = ToDIP(drawSize / static_cast<int>(bitmaps.size()));
+        const wxSize dipDrawSize = ToDIP(drawSize);
 
         gc->Translate(-FromDIP(dipDrawSize.GetWidth()) * selectedIndex, 0);
 
@@ -96,11 +96,6 @@ public:
             gc->DrawBitmap(bitmap, FromDIP(bitmapX), FromDIP(bitmapY), FromDIP(imageW), FromDIP(imageH));
 
             gc->ResetClip();
-
-            // temporary overlay
-            gc->SetPen(*wxRED_PEN);
-            gc->SetBrush(wxColor(255, 0, 0, 64));
-            gc->DrawRectangle(0, 0, FromDIP(dipDrawSize.GetWidth()), FromDIP(dipDrawSize.GetHeight()));
 
             gc->Translate(FromDIP(dipDrawSize.GetWidth()), 0);
         }

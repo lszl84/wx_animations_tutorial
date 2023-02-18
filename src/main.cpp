@@ -19,7 +19,7 @@ public:
     MyFrame(const wxString &title, const wxPoint &pos, const wxSize &size);
 
 private:
-    wxPanel *item;
+    wxButton *button;
 
     wxButton *startButton;
     wxButton *resetButton;
@@ -47,10 +47,11 @@ MyFrame::MyFrame(const wxString &title, const wxPoint &pos, const wxSize &size)
 
     auto mainSizer = new wxBoxSizer(wxVERTICAL);
     auto animPanel = new wxPanel(this, wxID_ANY);
-    animPanel->SetBackgroundColour(wxColour(100, 100, 200));
 
-    item = new wxPanel(animPanel, wxID_ANY, wxDefaultPosition, FromDIP(wxSize(100, 100)));
-    item->SetBackgroundColour(wxColour(200, 100, 100));
+    button = new wxButton(animPanel, wxID_ANY, "Hello World");
+
+    button->Bind(wxEVT_BUTTON, [this](wxCommandEvent &event)
+                 { wxMessageBox("Hello World"); });
 
     SetupCharts();
 
@@ -84,7 +85,7 @@ MyFrame::MyFrame(const wxString &title, const wxPoint &pos, const wxSize &size)
                       {
                           startButton->Disable();
                           resetButton->Disable();
-                          animator.Start(1000); });
+                          animator.Start(3000); });
 
     resetButton->Bind(wxEVT_BUTTON, [this](wxCommandEvent &event)
                       {
@@ -101,22 +102,13 @@ void MyFrame::SetupAnimations()
     animatedValues = {
         {0, 300, [this](AnimatedValue *sender, double tNorm, double value)
          {
-             item->SetPosition(wxPoint(FromDIP(value), item->GetPosition().y));
+             button->SetPosition(wxPoint(FromDIP(value), button->GetPosition().y));
 
              auto x = tNorm;
              auto y = sender->easingFunction(sender->startValue, sender->endValue, tNorm);
              charts[0]->highlightedPoint = {x, y};
          },
-         "Horizontal Position", AnimatedValue::EaseInOutCubic},
-        {100, 255, [this](AnimatedValue *sender, double tNorm, double value)
-         {
-             item->SetBackgroundColour(wxColour(200, value, 100));
-
-             auto x = tNorm;
-             auto y = sender->easingFunction(sender->startValue, sender->endValue, tNorm);
-             charts[1]->highlightedPoint = {x, y};
-         },
-         "Green Color Value", AnimatedValue::EaseInOutQuad}};
+         "Horizontal Position", AnimatedValue::EaseInOutCubic}};
 
     animator.SetAnimatedValues(animatedValues);
     animator.SetOnIteration([this]()

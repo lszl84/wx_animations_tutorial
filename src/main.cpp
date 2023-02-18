@@ -18,6 +18,10 @@ private:
 
     wxButton *startButton;
     wxButton *resetButton;
+
+    wxTimer timer;
+
+    const int MAX_X = 300;
 };
 
 bool MyApp::OnInit()
@@ -56,4 +60,32 @@ MyFrame::MyFrame(const wxString &title, const wxPoint &pos, const wxSize &size)
     mainSizer->SetMinSize(FromDIP(wxSize(500, 600)));
 
     this->SetSizerAndFit(mainSizer);
+
+    timer.SetOwner(this);
+
+    this->Bind(wxEVT_TIMER, [this](wxTimerEvent &event)
+               {
+        if (item->GetPosition().x >= FromDIP(MAX_X))
+        {
+            timer.Stop();
+            resetButton->Enable();
+        }
+        else
+        {
+            item->Move(item->GetPosition().x + FromDIP(1), item->GetPosition().y);
+        }
+        Refresh(); });
+
+    startButton->Bind(wxEVT_BUTTON, [this](wxCommandEvent &event)
+                      {
+                          startButton->Disable();
+                          resetButton->Disable();
+                          timer.Start(10); });
+
+    resetButton->Bind(wxEVT_BUTTON, [this](wxCommandEvent &event)
+                      {
+                          item->Move(0, 0);
+                          startButton->Enable();
+                          resetButton->Disable();
+                          Refresh(); });
 }

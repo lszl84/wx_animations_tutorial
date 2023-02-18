@@ -23,6 +23,8 @@ public:
         this->SetBackgroundStyle(wxBG_STYLE_PAINT); // needed for windows
 
         this->Bind(wxEVT_PAINT, &BitmapGallery::OnPaint, this);
+
+        this->Bind(wxEVT_KEY_DOWN, &BitmapGallery::OnKeyDown, this);
     }
 
     void OnPaint(wxPaintEvent &evt)
@@ -45,6 +47,8 @@ public:
     {
         const auto currentTransform = gc->GetTransform();
         const wxSize dipDrawSize = ToDIP(drawSize / static_cast<int>(bitmaps.size()));
+
+        gc->Translate(-FromDIP(dipDrawSize.GetWidth()) * selectedIndex, 0);
 
         for (const auto &bitmap : bitmaps)
         {
@@ -104,6 +108,27 @@ public:
         gc->SetTransform(currentTransform);
     }
 
+    void OnKeyDown(wxKeyEvent &evt)
+    {
+        if (evt.GetKeyCode() == WXK_LEFT)
+        {
+            selectedIndex = std::max(0, selectedIndex - 1);
+            Refresh();
+        }
+        else if (evt.GetKeyCode() == WXK_RIGHT)
+        {
+            selectedIndex = std::min(static_cast<int>(bitmaps.size()) - 1, selectedIndex + 1);
+            Refresh();
+        }
+        else
+        {
+            evt.Skip();
+        }
+    }
+
     std::vector<wxBitmap> bitmaps;
     BitmapScaling scaling = BitmapScaling::Center;
+
+private:
+    int selectedIndex = 0;
 };

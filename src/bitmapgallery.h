@@ -59,6 +59,16 @@ public:
                 DrawArrow(gc, NavigationRectRight(), arrowLineLength, arrowLineWidth, M_PI);
             }
 
+            const int dotRadius = FromDIP(4);
+            const int dotSpacing = FromDIP(6);
+
+            const int dotCount = bitmaps.size();
+
+            if (dotCount > 1)
+            {
+                DrawDots(gc, drawSize, dotCount, dotRadius, dotSpacing);
+            }
+
             delete gc;
         }
     }
@@ -145,6 +155,36 @@ public:
 
         gc->StrokeLine(0, 0, lineLength, 0);
         gc->StrokeLine(0, 0, 0, lineLength);
+
+        gc->SetTransform(currentTransform);
+    }
+
+    void DrawDots(wxGraphicsContext *gc, const wxSize &drawSize, int dotCount, int dotRadius, int dotSpacing)
+    {
+        const auto currentTransform = gc->GetTransform();
+
+        const int dotsWidth = dotCount * dotRadius * 2 + (dotCount - 1) * dotSpacing;
+
+        gc->Translate(-dotsWidth / 2, -dotRadius);
+        gc->Translate(drawSize.GetWidth() / 2, drawSize.GetHeight() - dotRadius * 4);
+
+        for (int i = 0; i < dotCount; i++)
+        {
+            gc->SetPen(*wxTRANSPARENT_PEN);
+
+            if (i == selectedIndex)
+            {
+                gc->SetBrush(wxBrush(wxColor(255, 255, 255, 255)));
+            }
+            else
+            {
+                gc->SetBrush(wxBrush(wxColor(255, 255, 255, 64)));
+            }
+
+            gc->DrawEllipse(0, 0, dotRadius * 2, dotRadius * 2);
+
+            gc->Translate(dotRadius * 2 + dotSpacing, 0);
+        }
 
         gc->SetTransform(currentTransform);
     }

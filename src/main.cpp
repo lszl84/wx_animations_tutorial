@@ -89,6 +89,10 @@ void MyFrame::SetupAnimations()
         {0, 300, [this](AnimatedValue *sender, double tNorm, double value)
          {
              item->SetPosition(wxPoint(FromDIP(value), item->GetPosition().y));
+         }},
+        {100, 255, [this](AnimatedValue *sender, double tNorm, double value)
+         {
+             item->SetBackgroundColour(wxColour(200, value, 100));
          }}};
 
     animator.SetAnimatedValues(animatedValues);

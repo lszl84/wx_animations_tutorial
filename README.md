@@ -8,7 +8,9 @@ Current main branch contains the Custom Control example: an image gallery with c
 
 ![Rectangles](/windows.png)
 
-For the simple `wxPanel` animations with interpolation charts, check out the commit 6291e6c405008e72993927566c4deec52a0d232a.
+For the simple `wxPanel` animations with interpolation charts, check out the commit 6291e6c405008e72993927566c4deec52a0d232a
+
+https://github.com/lszl84/wx_animations_tutorial/tree/6291e6c405008e72993927566c4deec52a0d232a
 
 ![Rectangles](/macpanel.png)
 

@@ -2,7 +2,7 @@
 
 Animations in wxWidgets using wxTimer. This project works on Windows, Mac and Linux.
 
-Check the video tutorial for details: https://www.youtube.com/playlist?list=PL0qQTroQZs5vVmTuBew-nTx9DIu6rRl2c
+Check the video tutorial for details: https://youtu.be/nuGpVppgV7c
 
 Current main branch contains the Custom Control example: an image gallery with custom navigation buttons and smooth animations.
 

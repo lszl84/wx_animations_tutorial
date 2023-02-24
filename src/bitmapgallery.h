@@ -71,7 +71,10 @@ public:
             {
                 DrawDots(gc, drawSize, dotCount, dotRadius, dotSpacing);
             }
+        }
 
+        if (gc)
+        {
             delete gc;
         }
     }

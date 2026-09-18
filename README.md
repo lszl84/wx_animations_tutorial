@@ -20,4 +20,5 @@ FREE wxWidgets course: https://www.youtube.com/playlist?list=PL0qQTroQZs5vVmTuBe
 Check out the blog for more! [www.onlyfastcode.com](https://www.onlyfastcode.com)
 ---
 
-📚 More C++ and wxWidgets tutorials: [devmindscape.com](https://devmindscape.com) · 💼 Available for contract work: [devmindscape.com/work](https://devmindscape.com/work/)
+📚 More C++ and wxWidgets tutorials: [devmindscape.com](https://devmindscape.com)\
+💼 Available for contract work: [devmindscape.com/work](https://devmindscape.com/work/)
